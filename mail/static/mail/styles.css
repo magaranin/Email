@@ -28,3 +28,7 @@ textarea {
     font-style: italic;
     font-size: 14px;
 }
+
+.emailRead {
+    background-color: rgb(240, 234, 234);
+}

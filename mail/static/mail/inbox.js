@@ -15,6 +15,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-detail').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -23,7 +24,7 @@ function compose_email() {
   document.querySelector('#compose-body').value = '';
 }
 
-function show_email(email_id, mailbox2){
+function show_email(email_id, mailbox2){//details for one email
 
   // Show the mailbox and hide other views
   document.querySelector('#email-detail').style.display = 'block';
@@ -40,17 +41,21 @@ function show_email(email_id, mailbox2){
     .then(email => {
       console.log(email_id);
       let email_detailHTML = '';  
-      email_detailHTML += `<div class="emailStyle">`;
-      email_detailHTML += `<div class="subject">${email.subject}</div>`;
-      email_detailHTML += `<div class="senderAndTime">${email.sender}<br> ${email.timestamp}</div>`;
-      email_detailHTML += `<div class="email_address">${email.recipients.join(', ')}</div>`;
-      email_detailHTML += `<div class="body">${email.body}</div>`;
-      if (email.archived === true) {
-        email_detailHTML += `<button onclick="archive(${email.id}, false)">Unarchive</button>`;
+      email_detailHTML += `<div class="emailDetail">`;
+      email_detailHTML += `<div class="senderAndTime"><strong>From: </strong>${email.sender}</div>`;
+      email_detailHTML += `<div class="email_address"><strong>To: </strong>${email.recipients.join(', ')}</div>`;
+      email_detailHTML += `<div class="subject"><strong>Subject: </strong>${email.subject}</div>`;
+      email_detailHTML += `<div class="timestamp"><strong>Timestamp: </strong>${email.timestamp}<br></br></div>`;
+      if (mailbox2.toLowerCase() !== "sent"){
+        if (email.archived === true) {
+          email_detailHTML += `<button onclick="archive(${email.id}, false)">Unarchive</button>`;
+        }
+        else {
+          email_detailHTML += `<button onclick="archive(${email.id}, true)">Archive</button>`;
+        }
       }
-      else {
-        email_detailHTML += `<button onclick="archive(${email.id}, true)">Archive</button>`;
-      }
+      email_detailHTML += `<button onclick="reply(${email.id})">Reply</button>`;
+      email_detailHTML += `<div class="body"><p></p><hr>${email.body}</div>`;
       email_detailHTML += `</div>`;
       console.log(email_detail.innerHTML);
       email_detail.innerHTML += email_detailHTML;
@@ -68,18 +73,7 @@ function show_email(email_id, mailbox2){
     });  
 }
 
-function archive(email_id, archive_email) {
-  //Show if email has been archive 
-  fetch(`/emails/${email_id}`, {
-    method: "PUT",
-    body:JSON.stringify({
-      archived: archive_email
-    })
-  })
-  .then(() => load_mailbox("inbox"));  
-}
-
-function load_mailbox(mailbox1) {
+function load_mailbox(mailbox1) {//all emails in the mailbox 
   
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
@@ -104,10 +98,14 @@ function load_mailbox(mailbox1) {
       else {
         emailHTML += `<div class="emailStyle" onclick="show_email(${email.id}, '${mailbox1}');">`;
       }
-      emailHTML += `<div class="date">${email.timestamp}</div>`;
-      emailHTML += `<div class="email_address">${email.recipients.join(', ')}</div>`;
-      emailHTML += `<div class="subject">${email.subject}</div>`;
-      emailHTML += `<div class="body">${email.body.substring(0, 50)}</div>`;
+      if (mailbox1.toLowerCase() === "sent"){
+        emailHTML += `<span class="email_address1"><strong>${email.recipients.join(', ')}</strong></span>`;
+      }
+      else {
+        emailHTML += `<span class="email_address1"><strong>${email.sender}</strong></span>`;
+      }
+      emailHTML += `<span class="email_subject1">${email.subject}</span>`;
+      emailHTML += `<span class="email_timestamp1">${email.timestamp}</span>`;
       emailHTML += `</div>`;
       emails_view.innerHTML += emailHTML;
       console.log(emails_view.innerHTML);
@@ -131,7 +129,12 @@ function submit() {
   })  
   .then(response => response.json())
   .then(result => {
-    load_mailbox('sent'); 
+    if (result.error) {
+      alert(result.error);
+    }
+    else {
+      load_mailbox('sent'); 
+    }
   })
   // Catch any errors and log them to the console
   .catch(error => {
@@ -140,3 +143,34 @@ function submit() {
   // Prevent default submission
   return false;
 }
+
+function archive(email_id, archive_email) {
+  //Show if email has been archive 
+  fetch(`/emails/${email_id}`, {
+    method: "PUT",
+    body:JSON.stringify({
+      archived: archive_email
+    })
+  })
+  .then(() => load_mailbox("inbox"));  
+}
+
+function reply(email_id) {
+  // Show compose view and hide other views
+  document.querySelector('#email-detail').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'block';
+  
+  fetch(`/emails/${email_id}`)
+    .then(response => response.json())
+    .then(email => {
+      console.log(email_id);
+      document.querySelector('#compose-recipients').value = email.sender;
+      if (email.subject.substring(0, 4) === "RE: ") {
+        document.querySelector('#compose-subject').value = email.subject;
+      }
+      else {
+        document.querySelector('#compose-subject').value = "RE: "+ email.subject;
+      }
+      document.querySelector('#compose-body').value = '"' + email.timestamp + ' ' + email.sender + ' wrote: ' + email.body + '"';
+    });
+}    

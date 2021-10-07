@@ -1,5 +1,5 @@
 textarea {
-    min-height: 400px;
+    min-height: 300px;
 }
 
 .btn {
@@ -7,28 +7,43 @@ textarea {
     
 }
 
-.emailStyle {
-    width: 100 px;
-    border: 5px solid blue;
-    padding: 5px;
-    position: relative;
-}
-
-.emailStyle .email_address {
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.emailStyle .subject {
-    font-style: normal;
+.emailDetail {
+    border-radius: 10px;
+    border: 5px solid rgb(0, 225, 255);
+    padding: 5px 10px 5px;
+    margin: 5px;
     font-size: 15px;
 }
 
-.emailStyle .body {
-    font-style: italic;
-    font-size: 14px;
+.emailStyle {
+    width: 100 px;
+    border-radius: 10px;
+    border: 5px solid rgb(0, 225, 255);
+    padding: 5px 10px 5px;
+    margin: 5px;
+    position: relative;
+    font-size: 15px;
+    min-width: 450px;
+    display: flex;
 }
 
 .emailRead {
-    background-color: rgb(240, 234, 234);
+    background-color: rgb(199, 196, 196);
+}
+
+.email_address1,
+.email_subject1,
+.email_timestamp1 {
+    padding-left: 10px;
+}
+
+.email_subject1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.email_timestamp1 {
+    margin-left: auto;
+    white-space: nowrap;
 }
